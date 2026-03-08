@@ -7,15 +7,24 @@ import android.widget.TextView
 
 class MainActivity : Activity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
 
-        val statusText = findViewById<TextView>(R.id.statusText)
-        val connectButton = findViewById<Button>(R.id.connectButton)
+    setContentView(R.layout.activity_main)
 
-        connectButton.setOnClickListener {
-            statusText.text = "Connect button pressed"
-        }
+    val statusText = findViewById<TextView>(R.id.statusText)
+    val connectButton = findViewById<Button>(R.id.connectButton)
+
+    // Default message
+    statusText.text = "ECUFlasher Pro Ready"
+
+    // Button label
+    connectButton.text = "Connect USB (Tactrix)"
+
+    // Button action
+    connectButton.setOnClickListener {
+        statusText.text = "USB connection selected (Tactrix priority)"
     }
+}
+
 }
