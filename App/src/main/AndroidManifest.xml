@@ -1,0 +1,10 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.ecuflasher">
+
+    <application
+        android:allowBackup="true"
+        android:label="ECUFlasher Pro"
+        android:supportsRtl="true">
+    </application>
+
+</manifest>
