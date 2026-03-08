@@ -3,28 +3,33 @@ package com.ecuflasher
 import android.app.Activity
 import android.os.Bundle
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 
 class MainActivity : Activity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(40, 40, 40, 40)
+        }
 
-    setContentView(R.layout.activity_main)
+        val statusText = TextView(this).apply {
+            text = "ECUFlasher Pro Ready"
+            textSize = 24f
+        }
 
-    val statusText = findViewById<TextView>(R.id.statusText)
-    val connectButton = findViewById<Button>(R.id.connectButton)
+        val connectButton = Button(this).apply {
+            text = "Connect USB (Tactrix)"
+            setOnClickListener {
+                statusText.text = "USB connection selected (Tactrix priority)"
+            }
+        }
 
-    // Default message
-    statusText.text = "ECUFlasher Pro Ready"
+        layout.addView(statusText)
+        layout.addView(connectButton)
 
-    // Button label
-    connectButton.text = "Connect USB (Tactrix)"
-
-    // Button action
-    connectButton.setOnClickListener {
-        statusText.text = "USB connection selected (Tactrix priority)"
+        setContentView(layout)
     }
-}
-
 }
