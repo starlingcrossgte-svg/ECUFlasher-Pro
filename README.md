@@ -44,17 +44,19 @@ This project is being developed in an unconventional mobile-first workflow:
 
 ---
 
-## Hardware Target
+## Hardware Support Goals
 
-Primary hardware interface planned:
+The long term goal is to support multiple ECU communication interfaces rather than depending on a single hardware device.
 
-Tactrix OpenPort 2.0 (USB OTG)
+Planned interface targets include:
 
-Future possibilities:
+• USB OTG serial devices  
+• CAN adapters  
+• Bluetooth OBD hardware  
+• Professional interfaces such as Tactrix OpenPort 2.0  
+• Possible standalone ECU communication support
 
-• CAN interfaces  
-• Bluetooth adapters  
-• standalone ECU support
+The project is intended to be modular so communication layers can be adapted to different hardware as development progresses.
 
 ---
 
