@@ -7,28 +7,32 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(40, 40, 40, 40)
+        val layout = LinearLayout(this)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(50, 50, 50, 50)
+
+        val title = TextView(this)
+        title.text = "ECUFlasher Pro"
+        title.textSize = 26f
+
+        val status = TextView(this)
+        status.text = "Ready"
+        status.textSize = 18f
+
+        val connect = Button(this)
+        connect.text = "Connect USB (Tactrix)"
+
+        connect.setOnClickListener {
+            status.text = "USB interface selected (Tactrix priority)"
         }
 
-        val statusText = TextView(this).apply {
-            text = "ECUFlasher Pro Ready"
-            textSize = 24f
-        }
-
-        val connectButton = Button(this).apply {
-            text = "Connect USB (Tactrix)"
-            setOnClickListener {
-                statusText.text = "USB connection selected (Tactrix priority)"
-            }
-        }
-
-        layout.addView(statusText)
-        layout.addView(connectButton)
+        layout.addView(title)
+        layout.addView(status)
+        layout.addView(connect)
 
         setContentView(layout)
     }
