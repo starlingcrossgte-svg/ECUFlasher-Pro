@@ -1,7 +1,10 @@
 package com.ecuflasher.comm.usb
 
 import android.content.Context
-import android.hardware.usb.*
+import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbDeviceConnection
+import android.hardware.usb.UsbInterface
+import android.hardware.usb.UsbManager
 import android.util.Log
 
 class UsbSerialManager(private val context: Context) {
@@ -10,7 +13,6 @@ class UsbSerialManager(private val context: Context) {
         context.getSystemService(Context.USB_SERVICE) as UsbManager
 
     fun checkConnectedDevices() {
-
         val deviceList: HashMap<String, UsbDevice> = usbManager.deviceList
 
         if (deviceList.isEmpty()) {
@@ -19,18 +21,15 @@ class UsbSerialManager(private val context: Context) {
         }
 
         for (device in deviceList.values) {
-
             Log.d(
                 "ECUFlasher",
                 "USB Device Found -> VendorID: ${device.vendorId}, ProductID: ${device.productId}"
             )
-
             openDevice(device)
         }
     }
 
     private fun openDevice(device: UsbDevice) {
-
         if (!usbManager.hasPermission(device)) {
             Log.d("ECUFlasher", "No permission for USB device")
             return
@@ -48,7 +47,6 @@ class UsbSerialManager(private val context: Context) {
         val interfaceCount = device.interfaceCount
 
         for (i in 0 until interfaceCount) {
-
             val usbInterface: UsbInterface = device.getInterface(i)
 
             if (connection.claimInterface(usbInterface, true)) {
