@@ -1,40 +1,49 @@
 package com.ecuflasher
 
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.ecuflasher.comm.usb.UsbSerialManager
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var statusText: TextView
-    private lateinit var usbManager: UsbManager
-    private lateinit var usbSerialManager: UsbSerialManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        statusText = findViewById(R.id.statusText)
-        usbManager = getSystemService(USB_SERVICE) as UsbManager
-        usbSerialManager = UsbSerialManager(this)
+        statusText = TextView(this)
+        setContentView(statusText)
 
-        checkUsbDevices()
-    }
-
-    private fun checkUsbDevices() {
-        val deviceList: HashMap<String, UsbDevice> = usbManager.deviceList
+        val usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
+        val deviceList = usbManager.deviceList
 
         if (deviceList.isEmpty()) {
             statusText.text = "No USB devices connected"
-        } else {
-            val firstDevice = deviceList.values.first()
-            statusText.text =
-                "USB device detected\nVendor ID: ${firstDevice.vendorId}\nProduct ID: ${firstDevice.productId}"
+            return
+        }
 
-            usbSerialManager.checkConnectedDevices()
+        val device: UsbDevice = deviceList.values.first()
+
+        val vendorId = device.vendorId
+        val productId = device.productId
+
+        statusText.text =
+            "USB device connected\nVendor ID: $vendorId\nProduct ID: $productId"
+
+        if (!usbManager.hasPermission(device)) {
+            val permissionIntent = PendingIntent.getBroadcast(
+                this,
+                0,
+                Intent("com.ecuflasher.USB_PERMISSION"),
+                PendingIntent.FLAG_IMMUTABLE
+            )
+
+            usbManager.requestPermission(device, permissionIntent)
         }
     }
 }
