@@ -32,6 +32,19 @@ class OpenPortClient(
         )
     }
 
+    fun sendManualAsciiCommand(rawInput: String): CommandResult {
+        val normalized = rawInput
+            .replace("\\r", "\r")
+            .replace("\\n", "\n")
+
+        SessionSummaryStore.setOpenPortCommand("MANUAL ASCII COMMAND")
+
+        return sendAsciiCommand(
+            commandLabel = "Manual OpenPort command",
+            commandString = normalized
+        )
+    }
+
     fun sendObdCanQuery0100(): CommandResult {
         SessionSummaryStore.setEcuQuery(OpenPortConstants.SESSION_ECU_QUERY_MODE_01_PID_00)
 
@@ -70,23 +83,9 @@ class OpenPortClient(
 
         EcuLogger.usb("Bytes received: $received")
 
-        val responseBytes = if (received > 0) {
-            buffer.copyOf(received)
-        } else {
-            byteArrayOf()
-        }
-
-        val responseHex = if (received > 0) {
-            toHex(responseBytes)
-        } else {
-            ""
-        }
-
-        val responseAscii = if (received > 0) {
-            String(responseBytes, Charsets.US_ASCII)
-        } else {
-            ""
-        }
+        val responseBytes = if (received > 0) buffer.copyOf(received) else byteArrayOf()
+        val responseHex = if (received > 0) toHex(responseBytes) else ""
+        val responseAscii = if (received > 0) String(responseBytes, Charsets.US_ASCII) else ""
 
         if (received > 0) {
             EcuLogger.usb("Response bytes: $responseHex")
@@ -144,23 +143,9 @@ class OpenPortClient(
 
         EcuLogger.usb("Bytes received: $received")
 
-        val responseBytes = if (received > 0) {
-            buffer.copyOf(received)
-        } else {
-            byteArrayOf()
-        }
-
-        val responseHex = if (received > 0) {
-            toHex(responseBytes)
-        } else {
-            ""
-        }
-
-        val responseAscii = if (received > 0) {
-            String(responseBytes, Charsets.US_ASCII)
-        } else {
-            ""
-        }
+        val responseBytes = if (received > 0) buffer.copyOf(received) else byteArrayOf()
+        val responseHex = if (received > 0) toHex(responseBytes) else ""
+        val responseAscii = if (received > 0) String(responseBytes, Charsets.US_ASCII) else ""
 
         if (received > 0) {
             EcuLogger.usb("Response bytes: $responseHex")

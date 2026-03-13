@@ -9,6 +9,7 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Bundle
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
@@ -29,6 +30,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var summaryEcuQueryText: TextView
     private lateinit var summaryResponseTypeText: TextView
     private lateinit var summaryErrorText: TextView
+
+    private lateinit var manualCommandInput: EditText
+    private lateinit var sendManualCommandButton: Button
+    private lateinit var manualCommandResponseText: TextView
 
     private lateinit var liveLogText: TextView
     private lateinit var refreshButton: Button
@@ -77,6 +82,10 @@ class MainActivity : AppCompatActivity() {
         summaryResponseTypeText = findViewById(R.id.summaryResponseTypeText)
         summaryErrorText = findViewById(R.id.summaryErrorText)
 
+        manualCommandInput = findViewById(R.id.manualCommandInput)
+        sendManualCommandButton = findViewById(R.id.sendManualCommandButton)
+        manualCommandResponseText = findViewById(R.id.manualCommandResponseText)
+
         liveLogText = findViewById(R.id.liveLogText)
         refreshButton = findViewById(R.id.refreshButton)
 
@@ -88,6 +97,10 @@ class MainActivity : AppCompatActivity() {
 
         refreshButton.setOnClickListener {
             checkTactrix()
+        }
+
+        sendManualCommandButton.setOnClickListener {
+            runManualCommand()
         }
 
         EcuLogger.main("ECUFlasher started")
@@ -156,6 +169,61 @@ class MainActivity : AppCompatActivity() {
         val manager = UsbDeviceManager(this)
         val result = manager.openTactrixChannel()
         renderResult(result)
+    }
+
+    private fun runManualCommand() {
+        val rawInput = manualCommandInput.text.toString()
+
+        if (rawInput.isBlank()) {
+            manualCommandResponseText.text = "Enter a command first"
+            return
+        }
+
+        val systemUsbManager = getSystemService(USB_SERVICE) as UsbManager
+        val tactrixDevice = systemUsbManager.deviceList.values.firstOrNull {
+            it.vendorId == UsbTransport.TACTRIX_VENDOR_ID &&
+            it.productId == UsbTransport.TACTRIX_PRODUCT_ID
+        }
+
+        if (tactrixDevice == null) {
+            manualCommandResponseText.text = "Tactrix device not detected"
+            return
+        }
+
+        if (!systemUsbManager.hasPermission(tactrixDevice)) {
+            manualCommandResponseText.text = "USB permission not granted"
+            return
+        }
+
+        val usbTransport = UsbTransport(this)
+        val openResult = usbTransport.openTactrix()
+
+        if (openResult == null) {
+            manualCommandResponseText.text = "Failed to open Tactrix connection"
+            refreshLiveLog()
+            refreshSessionSummary()
+            return
+        }
+
+        val openPortClient = OpenPortClient(
+            connection = openResult.connection,
+            endpointOut = openResult.endpointOut,
+            endpointIn = openResult.endpointIn
+        )
+
+        val result = openPortClient.sendManualAsciiCommand(rawInput)
+        usbTransport.close(openResult)
+
+        manualCommandResponseText.text = if (result.responseHex.isNotEmpty()) {
+            "Sent: ${formatCount(result.bytesSent)}\nReceived: ${formatCount(result.bytesReceived)}\nHex: ${result.responseHex}"
+        } else if (result.responseAscii.isNotEmpty()) {
+            "Sent: ${formatCount(result.bytesSent)}\nReceived: ${formatCount(result.bytesReceived)}\nASCII: ${result.responseAscii}"
+        } else {
+            "Sent: ${formatCount(result.bytesSent)}\nReceived: ${formatCount(result.bytesReceived)}\nNo response"
+        }
+
+        refreshLiveLog()
+        refreshSessionSummary()
     }
 
     private fun renderResult(result: TactrixTestResult) {
