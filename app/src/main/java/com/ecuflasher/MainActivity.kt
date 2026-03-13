@@ -129,7 +129,6 @@ class MainActivity : AppCompatActivity() {
 
         setupManualCommandPresetSpinner()
 
-        manualCommandInput.setText(appSettingsStore.getLastManualCommand())
 
         registerReceiver(
             usbReceiver,
@@ -263,7 +262,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        appSettingsStore.setLastManualCommand(rawInput)
 
         val systemUsbManager = getSystemService(USB_SERVICE) as UsbManager
         val tactrixDevice = systemUsbManager.deviceList.values.firstOrNull {
