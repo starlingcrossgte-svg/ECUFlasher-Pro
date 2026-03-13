@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var manualCommandResponseText: TextView
 
     private lateinit var liveLogText: TextView
+    private lateinit var clearLogsButton: Button
     private lateinit var refreshButton: Button
 
     private val usbReceiver = object : BroadcastReceiver() {
@@ -66,6 +67,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        AppContextHolder.context = applicationContext
+
         setContentView(R.layout.activity_main)
 
         statusMessageText = findViewById(R.id.statusMessageText)
@@ -87,6 +90,7 @@ class MainActivity : AppCompatActivity() {
         manualCommandResponseText = findViewById(R.id.manualCommandResponseText)
 
         liveLogText = findViewById(R.id.liveLogText)
+        clearLogsButton = findViewById(R.id.clearLogsButton)
         refreshButton = findViewById(R.id.refreshButton)
 
         registerReceiver(
@@ -101,6 +105,12 @@ class MainActivity : AppCompatActivity() {
 
         sendManualCommandButton.setOnClickListener {
             runManualCommand()
+        }
+
+        clearLogsButton.setOnClickListener {
+            InAppLogStore.clear()
+            LogFileWriter.clear(this)
+            liveLogText.text = "Logs cleared"
         }
 
         EcuLogger.main("ECUFlasher started")
@@ -214,13 +224,14 @@ class MainActivity : AppCompatActivity() {
         val result = openPortClient.sendManualAsciiCommand(rawInput)
         usbTransport.close(openResult)
 
-        manualCommandResponseText.text = if (result.responseHex.isNotEmpty()) {
-            "Sent: ${formatCount(result.bytesSent)}\nReceived: ${formatCount(result.bytesReceived)}\nHex: ${result.responseHex}"
-        } else if (result.responseAscii.isNotEmpty()) {
-            "Sent: ${formatCount(result.bytesSent)}\nReceived: ${formatCount(result.bytesReceived)}\nASCII: ${result.responseAscii}"
-        } else {
-            "Sent: ${formatCount(result.bytesSent)}\nReceived: ${formatCount(result.bytesReceived)}\nNo response"
-        }
+        manualCommandResponseText.text =
+            if (result.responseHex.isNotEmpty()) {
+                "Sent: ${formatCount(result.bytesSent)}\nReceived: ${formatCount(result.bytesReceived)}\nHex: ${result.responseHex}"
+            } else if (result.responseAscii.isNotEmpty()) {
+                "Sent: ${formatCount(result.bytesSent)}\nReceived: ${formatCount(result.bytesReceived)}\nASCII: ${result.responseAscii}"
+            } else {
+                "Sent: ${formatCount(result.bytesSent)}\nReceived: ${formatCount(result.bytesReceived)}\nNo response"
+            }
 
         refreshLiveLog()
         refreshSessionSummary()
