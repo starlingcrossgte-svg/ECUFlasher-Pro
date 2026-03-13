@@ -22,6 +22,40 @@
             android:layout_marginBottom="20dp" />
 
         <LinearLayout
+            android:id="@+id/developerModePanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Developer Mode"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#666666"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/developerModeStatusText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Developer Mode: ON"
+                android:textSize="16sp"
+                android:textColor="#222222"
+                android:layout_marginBottom="12dp" />
+
+            <Button
+                android:id="@+id/toggleDeveloperModeButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TOGGLE DEVELOPER MODE" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -49,6 +83,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/debugDetailsPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -133,6 +168,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/sessionSummaryPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -195,6 +231,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/manualCommandPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -250,6 +287,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/liveLogPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"

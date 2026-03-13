@@ -8,14 +8,24 @@ import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
     private val ACTION_USB_PERMISSION = "com.ecuflasher.USB_PERMISSION"
+
+    private lateinit var developerModeStatusText: TextView
+    private lateinit var toggleDeveloperModeButton: Button
+
+    private lateinit var debugDetailsPanel: LinearLayout
+    private lateinit var sessionSummaryPanel: LinearLayout
+    private lateinit var manualCommandPanel: LinearLayout
+    private lateinit var liveLogPanel: LinearLayout
 
     private lateinit var statusMessageText: TextView
     private lateinit var deviceStateText: TextView
@@ -71,6 +81,14 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
+        developerModeStatusText = findViewById(R.id.developerModeStatusText)
+        toggleDeveloperModeButton = findViewById(R.id.toggleDeveloperModeButton)
+
+        debugDetailsPanel = findViewById(R.id.debugDetailsPanel)
+        sessionSummaryPanel = findViewById(R.id.sessionSummaryPanel)
+        manualCommandPanel = findViewById(R.id.manualCommandPanel)
+        liveLogPanel = findViewById(R.id.liveLogPanel)
+
         statusMessageText = findViewById(R.id.statusMessageText)
         deviceStateText = findViewById(R.id.deviceStateText)
         permissionStateText = findViewById(R.id.permissionStateText)
@@ -113,7 +131,13 @@ class MainActivity : AppCompatActivity() {
             liveLogText.text = "Logs cleared"
         }
 
+        toggleDeveloperModeButton.setOnClickListener {
+            DeveloperModeStore.toggle()
+            refreshDeveloperModeUi()
+        }
+
         EcuLogger.main("ECUFlasher started")
+        refreshDeveloperModeUi()
         refreshLiveLog()
         refreshSessionSummary()
     }
@@ -249,6 +273,20 @@ class MainActivity : AppCompatActivity() {
         }
         refreshLiveLog()
         refreshSessionSummary()
+    }
+
+    private fun refreshDeveloperModeUi() {
+        val enabled = DeveloperModeStore.enabled
+
+        developerModeStatusText.text =
+            if (enabled) "Developer Mode: ON" else "Developer Mode: OFF"
+
+        val visibility = if (enabled) View.VISIBLE else View.GONE
+
+        debugDetailsPanel.visibility = visibility
+        sessionSummaryPanel.visibility = visibility
+        manualCommandPanel.visibility = visibility
+        liveLogPanel.visibility = visibility
     }
 
     private fun refreshLiveLog() {
