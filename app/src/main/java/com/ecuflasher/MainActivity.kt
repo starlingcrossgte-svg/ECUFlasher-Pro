@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var developerToolsPanel: LinearLayout
     private lateinit var toggleDeveloperModeButton: Button
     private lateinit var developerLogText: TextView
+    private lateinit var clearLogsButton: Button
 
     private var developerModeEnabled = false
 
@@ -84,6 +85,7 @@ class MainActivity : AppCompatActivity() {
         developerToolsPanel = findViewById(R.id.liveLogPanel)
         toggleDeveloperModeButton = findViewById(R.id.toggleDeveloperModeButton)
         developerLogText = findViewById(R.id.liveLogText)
+        clearLogsButton = findViewById(R.id.clearLogsButton)
 
         registerReceiver(
             usbReceiver,
@@ -109,6 +111,11 @@ class MainActivity : AppCompatActivity() {
                 EcuLogger.main("Developer mode disabled")
             }
 
+            refreshDeveloperLog()
+        }
+
+        clearLogsButton.setOnClickListener {
+            EcuLogger.clear()
             refreshDeveloperLog()
         }
 
