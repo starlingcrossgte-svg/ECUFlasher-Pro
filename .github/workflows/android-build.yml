@@ -32,5 +32,8 @@ jobs:
       - name: Install required SDK packages
         run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
+      - name: Trigger build comment
+        run: echo "trigger build $(date)" > trigger.txt
+
       - name: Build APK
         run: ./gradlew assembleDebug
