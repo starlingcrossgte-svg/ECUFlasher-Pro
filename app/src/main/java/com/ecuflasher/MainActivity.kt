@@ -8,9 +8,7 @@ import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Bundle
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
@@ -25,9 +23,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sessionSummaryPanel: LinearLayout
     private lateinit var manualCommandPanel: LinearLayout
     private lateinit var developerToolsPanel: LinearLayout
+
     private lateinit var toggleDeveloperModeButton: Button
     private lateinit var developerLogText: TextView
     private lateinit var clearLogsButton: Button
+
+    private lateinit var manualCommandPresetSpinner: Spinner
+    private lateinit var manualCommandInput: EditText
 
     private var developerModeEnabled = false
 
@@ -45,6 +47,7 @@ class MainActivity : AppCompatActivity() {
 
     private val usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+
             if (intent?.action == ACTION_USB_PERMISSION) {
 
                 val device: UsbDevice? =
@@ -71,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
@@ -83,9 +87,13 @@ class MainActivity : AppCompatActivity() {
         sessionSummaryPanel = findViewById(R.id.sessionSummaryPanel)
         manualCommandPanel = findViewById(R.id.manualCommandPanel)
         developerToolsPanel = findViewById(R.id.liveLogPanel)
+
         toggleDeveloperModeButton = findViewById(R.id.toggleDeveloperModeButton)
         developerLogText = findViewById(R.id.liveLogText)
         clearLogsButton = findViewById(R.id.clearLogsButton)
+
+        manualCommandPresetSpinner = findViewById(R.id.manualCommandPresetSpinner)
+        manualCommandInput = findViewById(R.id.manualCommandInput)
 
         registerReceiver(
             usbReceiver,
@@ -99,6 +107,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         toggleDeveloperModeButton.setOnClickListener {
+
             developerModeEnabled = !developerModeEnabled
 
             if (developerModeEnabled) {
@@ -119,12 +128,56 @@ class MainActivity : AppCompatActivity() {
             refreshDeveloperLog()
         }
 
+        setupCommandPresets()
+
         developerModeEnabled = false
         developerModeStatusText.text = "Developer Mode: OFF"
         setDeveloperPanelsVisible(false)
 
         EcuLogger.main("HashSlingingFlasher started")
         refreshDeveloperLog()
+    }
+
+    private fun setupCommandPresets() {
+
+        val presets = listOf(
+            "Select Command",
+            "ATI",
+            "ATZ",
+            "ATE0",
+            "ATH1",
+            "ATSP0"
+        )
+
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            presets
+        )
+
+        manualCommandPresetSpinner.adapter = adapter
+
+        manualCommandPresetSpinner.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: android.view.View?,
+                    position: Int,
+                    id: Long
+                ) {
+
+                    if (position == 0) return
+
+                    val command = presets[position]
+                    manualCommandInput.setText(command)
+
+                    EcuLogger.main("Preset selected: $command")
+                    refreshDeveloperLog()
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
     }
 
     override fun onDestroy() {
@@ -141,6 +194,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (tactrixDevice == null) {
+
             EcuLogger.usb("Tactrix device not found")
             statusText.text = "Tactrix device not detected"
             refreshDeveloperLog()
