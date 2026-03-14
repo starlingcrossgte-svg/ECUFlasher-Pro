@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Bundle
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 
@@ -54,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setDeveloperPanelsVisible(visible: Boolean) {
-        val state = if (visible) LinearLayout.VISIBLE else LinearLayout.GONE
+        val state = if (visible) View.VISIBLE else View.GONE
         debugDetailsPanel.visibility = state
         sessionSummaryPanel.visibility = state
         manualCommandPanel.visibility = state
@@ -76,12 +77,11 @@ class MainActivity : AppCompatActivity() {
             permissionStateText.text = "Permission: Not applicable"
         } else {
             deviceStateText.text = "Device: Tactrix OpenPort detected"
-            val permissionText = if (systemUsbManager.hasPermission(tactrixDevice)) {
-                "Granted"
+            permissionStateText.text = if (systemUsbManager.hasPermission(tactrixDevice)) {
+                "Permission: Granted"
             } else {
-                "Not granted"
+                "Permission: Not granted"
             }
-            permissionStateText.text = "Permission: $permissionText"
         }
 
         lastCommandText.text = "Last Command: $lastCommand"
@@ -98,11 +98,7 @@ class MainActivity : AppCompatActivity() {
 
             if (granted) {
                 EcuLogger.usb("USB permission granted")
-
-                val manager = UsbDeviceManager(this@MainActivity)
-                val result = manager.openTactrixChannel()
-
-                statusText.text = buildStatusText(result)
+                statusText.text = "OpenPort detected and permission granted"
             } else {
                 EcuLogger.usb("USB permission denied")
                 statusText.text = "USB permission denied"
@@ -187,6 +183,8 @@ class MainActivity : AppCompatActivity() {
 
             lastCommand = command
             bytesSent = command.length.toString()
+            bytesReceived = "-"
+            responseHex = "--"
 
             manualCommandResponseText.text = "Command queued: $command"
             EcuLogger.main("Manual command sent: $command")
@@ -200,6 +198,8 @@ class MainActivity : AppCompatActivity() {
         developerModeEnabled = false
         developerModeStatusText.text = "Developer Mode: OFF"
         setDeveloperPanelsVisible(false)
+
+        statusText.text = "USB Status Unknown"
 
         EcuLogger.main("HashSlingingFlasher started")
         refreshDeveloperLog()
@@ -228,7 +228,7 @@ class MainActivity : AppCompatActivity() {
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
                     parent: AdapterView<*>?,
-                    view: android.view.View?,
+                    view: View?,
                     position: Int,
                     id: Long
                 ) {
@@ -236,7 +236,6 @@ class MainActivity : AppCompatActivity() {
 
                     val command = presets[position]
                     manualCommandInput.setText(command)
-
                     EcuLogger.main("Preset selected: $command")
                     refreshDeveloperLog()
                 }
@@ -277,15 +276,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         EcuLogger.usb("USB permission already granted")
-
-        val manager = UsbDeviceManager(this)
-        val result = manager.openTactrixChannel()
-
-        statusText.text = buildStatusText(result)
+        statusText.text = "OpenPort detected and permission granted"
         refreshDebugPanel()
-    }
-
-    private fun buildStatusText(result: TactrixTestResult): String {
-        return result.statusMessage
     }
 }
