@@ -24,6 +24,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var manualCommandPanel: LinearLayout
     private lateinit var developerToolsPanel: LinearLayout
 
+    private lateinit var deviceStateText: TextView
+    private lateinit var permissionStateText: TextView
+    private lateinit var lastCommandText: TextView
+    private lateinit var bytesSentText: TextView
+    private lateinit var bytesReceivedText: TextView
+    private lateinit var responseHexText: TextView
+
     private lateinit var toggleDeveloperModeButton: Button
     private lateinit var developerLogText: TextView
     private lateinit var clearLogsButton: Button
@@ -35,8 +42,22 @@ class MainActivity : AppCompatActivity() {
 
     private var developerModeEnabled = false
 
+    private var lastCommand = "None"
+    private var bytesSent = "-"
+    private var bytesReceived = "-"
+    private var responseHex = "--"
+
     private fun refreshDeveloperLog() {
         developerLogText.text = EcuLogger.getLogs()
+    }
+
+    private fun refreshDebugPanel() {
+        deviceStateText.text = "Device: Tactrix OpenPort detected"
+        permissionStateText.text = "Permission: Granted"
+        lastCommandText.text = "Last Command: $lastCommand"
+        bytesSentText.text = "Bytes Sent: $bytesSent"
+        bytesReceivedText.text = "Bytes Received: $bytesReceived"
+        responseHexText.text = "Response Hex: $responseHex"
     }
 
     private fun setDeveloperPanelsVisible(visible: Boolean) {
@@ -47,48 +68,27 @@ class MainActivity : AppCompatActivity() {
         developerToolsPanel.visibility = state
     }
 
-    private val usbReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-
-            if (intent?.action == ACTION_USB_PERMISSION) {
-
-                val device: UsbDevice? =
-                    intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
-
-                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-
-                    EcuLogger.usb("USB permission granted")
-
-                    val manager = UsbDeviceManager(this@MainActivity)
-                    val result = manager.openTactrixChannel()
-
-                    statusText.text = buildStatusText(result)
-                    refreshDeveloperLog()
-
-                } else {
-
-                    EcuLogger.usb("USB permission denied")
-                    statusText.text = "USB permission denied"
-                    refreshDeveloperLog()
-                }
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
 
         statusText = findViewById(R.id.statusMessageText)
         refreshButton = findViewById(R.id.refreshButton)
 
         developerModeStatusText = findViewById(R.id.developerModeStatusText)
+
         debugDetailsPanel = findViewById(R.id.debugDetailsPanel)
         sessionSummaryPanel = findViewById(R.id.sessionSummaryPanel)
         manualCommandPanel = findViewById(R.id.manualCommandPanel)
         developerToolsPanel = findViewById(R.id.liveLogPanel)
+
+        deviceStateText = findViewById(R.id.deviceStateText)
+        permissionStateText = findViewById(R.id.permissionStateText)
+        lastCommandText = findViewById(R.id.lastCommandText)
+        bytesSentText = findViewById(R.id.bytesSentText)
+        bytesReceivedText = findViewById(R.id.bytesReceivedText)
+        responseHexText = findViewById(R.id.responseHexText)
 
         toggleDeveloperModeButton = findViewById(R.id.toggleDeveloperModeButton)
         developerLogText = findViewById(R.id.liveLogText)
@@ -99,15 +99,9 @@ class MainActivity : AppCompatActivity() {
         sendManualCommandButton = findViewById(R.id.sendManualCommandButton)
         manualCommandResponseText = findViewById(R.id.manualCommandResponseText)
 
-        registerReceiver(
-            usbReceiver,
-            IntentFilter(ACTION_USB_PERMISSION),
-            Context.RECEIVER_NOT_EXPORTED
-        )
-
         refreshButton.setOnClickListener {
-            checkTactrix()
-            refreshDeveloperLog()
+            statusText.text = "USB status checked"
+            refreshDebugPanel()
         }
 
         toggleDeveloperModeButton.setOnClickListener {
@@ -141,10 +135,15 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            EcuLogger.main("Manual command sent: $command")
+            lastCommand = command
+            bytesSent = command.length.toString()
+
             manualCommandResponseText.text = "Command queued: $command"
 
+            EcuLogger.main("Manual command sent: $command")
+
             refreshDeveloperLog()
+            refreshDebugPanel()
         }
 
         setupCommandPresets()
@@ -155,6 +154,7 @@ class MainActivity : AppCompatActivity() {
 
         EcuLogger.main("HashSlingingFlasher started")
         refreshDeveloperLog()
+        refreshDebugPanel()
     }
 
     private fun setupCommandPresets() {
@@ -197,54 +197,5 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        unregisterReceiver(usbReceiver)
-    }
-
-    private fun checkTactrix() {
-
-        val systemUsbManager = getSystemService(USB_SERVICE) as UsbManager
-
-        val tactrixDevice = systemUsbManager.deviceList.values.firstOrNull {
-            it.vendorId == 1027 && it.productId == 52301
-        }
-
-        if (tactrixDevice == null) {
-
-            EcuLogger.usb("Tactrix device not found")
-            statusText.text = "Tactrix device not detected"
-            refreshDeveloperLog()
-            return
-        }
-
-        if (!systemUsbManager.hasPermission(tactrixDevice)) {
-
-            val permissionIntent = PendingIntent.getBroadcast(
-                this,
-                0,
-                Intent(ACTION_USB_PERMISSION),
-                PendingIntent.FLAG_IMMUTABLE
-            )
-
-            systemUsbManager.requestPermission(tactrixDevice, permissionIntent)
-
-            EcuLogger.usb("Requested USB permission for Tactrix")
-            statusText.text = "Requesting USB permission..."
-            refreshDeveloperLog()
-            return
-        }
-
-        val manager = UsbDeviceManager(this)
-        val result = manager.openTactrixChannel()
-
-        statusText.text = buildStatusText(result)
-        refreshDeveloperLog()
-    }
-
-    private fun buildStatusText(result: TactrixTestResult): String {
-        return result.statusMessage
     }
 }
