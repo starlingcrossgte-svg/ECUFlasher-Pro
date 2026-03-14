@@ -21,6 +21,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var refreshButton: Button
 
     private lateinit var developerModeStatusText: TextView
+    private lateinit var debugDetailsPanel: LinearLayout
+    private lateinit var sessionSummaryPanel: LinearLayout
+    private lateinit var manualCommandPanel: LinearLayout
     private lateinit var developerToolsPanel: LinearLayout
     private lateinit var toggleDeveloperModeButton: Button
     private lateinit var developerLogText: TextView
@@ -29,6 +32,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshDeveloperLog() {
         developerLogText.text = EcuLogger.getLogs()
+    }
+
+    private fun setDeveloperPanelsVisible(visible: Boolean) {
+        val state = if (visible) LinearLayout.VISIBLE else LinearLayout.GONE
+        debugDetailsPanel.visibility = state
+        sessionSummaryPanel.visibility = state
+        manualCommandPanel.visibility = state
+        developerToolsPanel.visibility = state
     }
 
     private val usbReceiver = object : BroadcastReceiver() {
@@ -53,7 +64,6 @@ class MainActivity : AppCompatActivity() {
                     EcuLogger.usb("USB permission denied")
                     statusText.text = "USB permission denied"
                     refreshDeveloperLog()
-
                 }
             }
         }
@@ -68,6 +78,9 @@ class MainActivity : AppCompatActivity() {
         refreshButton = findViewById(R.id.refreshButton)
 
         developerModeStatusText = findViewById(R.id.developerModeStatusText)
+        debugDetailsPanel = findViewById(R.id.debugDetailsPanel)
+        sessionSummaryPanel = findViewById(R.id.sessionSummaryPanel)
+        manualCommandPanel = findViewById(R.id.manualCommandPanel)
         developerToolsPanel = findViewById(R.id.liveLogPanel)
         toggleDeveloperModeButton = findViewById(R.id.toggleDeveloperModeButton)
         developerLogText = findViewById(R.id.liveLogText)
@@ -84,29 +97,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         toggleDeveloperModeButton.setOnClickListener {
-
             developerModeEnabled = !developerModeEnabled
 
             if (developerModeEnabled) {
-
                 developerModeStatusText.text = "Developer Mode: ON"
-                developerToolsPanel.visibility = LinearLayout.VISIBLE
-
+                setDeveloperPanelsVisible(true)
                 EcuLogger.main("Developer mode enabled")
-                refreshDeveloperLog()
-
             } else {
-
                 developerModeStatusText.text = "Developer Mode: OFF"
-                developerToolsPanel.visibility = LinearLayout.GONE
-
+                setDeveloperPanelsVisible(false)
                 EcuLogger.main("Developer mode disabled")
-                refreshDeveloperLog()
-
             }
+
+            refreshDeveloperLog()
         }
 
-        developerToolsPanel.visibility = LinearLayout.GONE
+        setDeveloperPanelsVisible(false)
 
         EcuLogger.main("HashSlingingFlasher started")
         refreshDeveloperLog()
@@ -126,12 +132,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (tactrixDevice == null) {
-
             EcuLogger.usb("Tactrix device not found")
             statusText.text = "Tactrix device not detected"
             refreshDeveloperLog()
             return
-
         }
 
         if (!systemUsbManager.hasPermission(tactrixDevice)) {
@@ -148,7 +152,6 @@ class MainActivity : AppCompatActivity() {
             EcuLogger.usb("Requested USB permission for Tactrix")
             statusText.text = "Requesting USB permission..."
             refreshDeveloperLog()
-
             return
         }
 
@@ -160,19 +163,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun buildStatusText(result: TactrixTestResult): String {
-
         return if (result.success) {
-
-            if (result.responseHex.isNotEmpty()) {
-                "${result.statusMessage}\nSent: ${result.bytesSent}\nReceived: ${result.responseHex}"
-            } else {
-                "${result.statusMessage}\nSent: ${result.bytesSent}\nReceived: ${result.bytesReceived}"
-            }
-
-        } else {
-
             result.statusMessage
-
+        } else {
+            result.statusMessage
         }
     }
 }
