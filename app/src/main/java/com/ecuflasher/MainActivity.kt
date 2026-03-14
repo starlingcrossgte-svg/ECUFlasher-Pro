@@ -13,13 +13,16 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
+
     private val ACTION_USB_PERMISSION = "com.ecuflasher.USB_PERMISSION"
+
     private lateinit var statusText: TextView
     private lateinit var refreshButton: Button
 
     private val usbReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action != ACTION_USB_PERMISSION) return
+
             val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
             val usbManager = context?.getSystemService(Context.USB_SERVICE) as UsbManager
             val tDevice = usbManager.deviceList.values.firstOrNull {
@@ -57,10 +60,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         statusText = findViewById(R.id.statusMessageText)
         refreshButton = findViewById(R.id.refreshButton)
 
-        refreshButton.setOnClickListener { requestUsbPermission() }
+        refreshButton.setOnClickListener {
+            requestUsbPermission()
+        }
+
         registerReceiver(usbReceiver, IntentFilter(ACTION_USB_PERMISSION))
     }
 }
