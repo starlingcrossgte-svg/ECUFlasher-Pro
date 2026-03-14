@@ -30,6 +30,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var manualCommandPresetSpinner: Spinner
     private lateinit var manualCommandInput: EditText
+    private lateinit var sendManualCommandButton: Button
+    private lateinit var manualCommandResponseText: TextView
 
     private var developerModeEnabled = false
 
@@ -94,6 +96,8 @@ class MainActivity : AppCompatActivity() {
 
         manualCommandPresetSpinner = findViewById(R.id.manualCommandPresetSpinner)
         manualCommandInput = findViewById(R.id.manualCommandInput)
+        sendManualCommandButton = findViewById(R.id.sendManualCommandButton)
+        manualCommandResponseText = findViewById(R.id.manualCommandResponseText)
 
         registerReceiver(
             usbReceiver,
@@ -125,6 +129,21 @@ class MainActivity : AppCompatActivity() {
 
         clearLogsButton.setOnClickListener {
             EcuLogger.clear()
+            refreshDeveloperLog()
+        }
+
+        sendManualCommandButton.setOnClickListener {
+
+            val command = manualCommandInput.text.toString().trim()
+
+            if (command.isEmpty()) {
+                manualCommandResponseText.text = "No command entered"
+                return@setOnClickListener
+            }
+
+            EcuLogger.main("Manual command sent: $command")
+            manualCommandResponseText.text = "Command queued: $command"
+
             refreshDeveloperLog()
         }
 
