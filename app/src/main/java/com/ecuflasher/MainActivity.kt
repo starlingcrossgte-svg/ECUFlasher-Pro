@@ -1,4 +1,3 @@
-cat > app/src/main/java/com/ecuflasher/MainActivity.kt << 'EOF'
 package com.ecuflasher
 
 import android.app.PendingIntent
