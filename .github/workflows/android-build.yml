@@ -1,12 +1,10 @@
-
-:
 name: Android Build
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
+  workflow_dispatch:  # <--- add this line to enable manual trigger
 
 jobs:
   build:
